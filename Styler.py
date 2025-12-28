@@ -2,7 +2,7 @@ import streamlit as st
 import yaml
 
 # 設定頁面配置
-st.set_page_config(layout="wide", page_title="NotebookLM Architect v6.0", page_icon="🧠")
+st.set_page_config(layout="wide", page_title="NotebookLM Architect v6.0", page_icon="🌷")
 
 # ==========================================
 # 1. 全域風格數據庫 (Master Style Database)
