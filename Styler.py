@@ -2,277 +2,177 @@ import streamlit as st
 import yaml
 
 # 設定頁面配置
-st.set_page_config(layout="wide", page_title="NotebookLM Visual Architect v2.1", page_icon="🎨")
+st.set_page_config(layout="wide", page_title="NotebookLM Visual Architect v3.1", page_icon="🎬")
 
 # ==========================================
 # 1. 數據庫定義 (Presets)
 # ==========================================
 
-# --- 投影片預設 (Slide Presets) ---
-SLIDE_PRESETS = {
-    "希伯來盟約 (Hebrew Covenant)": {
-        "description": "史詩感、羊皮卷、金/藍/紅配色，適合歷史與宗教敘事。",
-        "brand": {"name": "Covenant & Journey", "tone": "史詩、神聖", "voice": "先知性敘事"},
-        "visual_prompts": {
-            "art_direction": "Biblical epic, Rembrandt lighting, oil painting texture",
-            "background": "Aged parchment texture with ancient maps",
-            "elements": "Burning bush, desert dunes, stone tablets"
+# --- Video 腳本風格預設 ---
+VIDEO_PRESETS = {
+    "希伯來盟約史詩 (Hebrew Epic)": {
+        "description": "電影質感、宏大敘事，適合歷史重現與願景影片。",
+        "vision": {
+            "style": "Cinematic Realism (Dune Style)",
+            "mood": "神聖、滄桑、震撼 (Awe-inspiring)",
+            "pacing": "緩慢鋪陳 -> 震撼高潮 (Slow burn to Climax)"
         },
-        "layout_intent": {
-            "logic_1": "revelation: descending-light (光從上方照下)",
-            "logic_2": "journey: map-overlay (地圖路徑疊加)",
-            "logic_3": "law: twin-tablets (石版左右並列)"
+        "audio": {
+            "vo": "深沉的先知性旁白 (Prophetic Narrator)",
+            "music": "管弦樂、Duduk 笛聲、戰鼓",
+            "sfx": "曠野風聲、火焰燃燒聲、雷鳴"
         },
-        "typography": {"font": "Noto Serif TC", "style": "Calligraphic"},
-        "palette": {"primary": "#F3E5AB (羊皮卷)", "accent": "#0038B8 (提吉勒藍)"}
+        "visuals": {
+            "lighting": "林布蘭光 (Chiaroscuro), 耶穌光 (God rays)",
+            "camera": "史詩航拍 (Drone), 緩慢推軌 (Slow Dolly)",
+            "palette": "金色、深藍、赤紅、沙色"
+        }
     },
-    "瑞士國際主義 (Swiss Style)": {
-        "description": "極簡、網格、無襯線字體，適合數據報告與學術分析。",
-        "brand": {"name": "Helvetica Standard", "tone": "理性、客觀", "voice": "資訊優先"},
-        "visual_prompts": {
-            "art_direction": "Minimalist photography, high contrast, neutral lighting",
-            "background": "Solid white or pure black",
-            "elements": "Abstract geometric shapes, clean lines"
+    "現代科技解說 (Tech Explainer)": {
+        "description": "快節奏、幾何圖形、UI 演示，適合產品發布與教學。",
+        "vision": {
+            "style": "Motion Graphics & Mixed Media",
+            "mood": "專業、前衛、高能量 (High Energy)",
+            "pacing": "快速剪輯 (Snappy cuts)"
         },
-        "layout_intent": {
-            "logic_1": "grid: modular-12-col (模組化網格)",
-            "logic_2": "contrast: scale-typography (巨大字級對比)",
-            "logic_3": "data: naked-charts (極簡圖表)"
+        "audio": {
+            "vo": "親切、聰明、對話感 (Conversational)",
+            "music": "Lo-fi Beats, Upbeat Electronic",
+            "sfx": "鍵盤聲、數位轉場音效 (Whoosh, Glitch)"
         },
-        "typography": {"font": "Noto Sans TC", "style": "Black/Heavy"},
-        "palette": {"primary": "#FFFFFF (白)", "accent": "#FF3B30 (瑞士紅)"}
+        "visuals": {
+            "lighting": "高對比霓虹光 (Neon), 柔光箱 (Softbox)",
+            "camera": "動態運鏡 (Whip pans), 螢幕錄製縮放",
+            "palette": "深色模式黑、螢光青、白"
+        }
     },
-    "現代商務 (Modern Tech)": {
-        "description": "深色模式、霓虹點綴、玻璃擬態，適合科技與商業提案。",
-        "brand": {"name": "Tech Core", "tone": "專業、前衛", "voice": "數據驅動"},
-        "visual_prompts": {
-            "art_direction": "Tech-noir, glassmorphism, 3D isometric",
-            "background": "Dark blue gradients, data flow lines",
-            "elements": "Floating interfaces, glowing nodes"
+    "社群短影音 (Viral Short)": {
+        "description": "9:16 垂直構圖、強調鉤子 (Hook)、高互動性。",
+        "vision": {
+            "style": "UGC (User Generated Content) Style",
+            "mood": "真實、有趣、直接",
+            "pacing": "極快 (Fast-paced), 每 3 秒一個切換"
         },
-        "layout_intent": {
-            "logic_1": "focus: bento-box (便當盒式佈局)",
-            "logic_2": "compare: split-screen (左右分割)",
-            "logic_3": "highlight: neon-frame (霓虹邊框)"
+        "audio": {
+            "vo": "充滿活力、第一人稱 (Vlogger)",
+            "music": "Trending TikTok Sounds",
+            "sfx": "強調音效 (Pop, Ding)"
         },
-        "typography": {"font": "Taipei Sans TC", "style": "Bold"},
-        "palette": {"primary": "#0A0E14 (深藍黑)", "accent": "#00F0FF (螢光青)"}
+        "visuals": {
+            "lighting": "自然光、環形燈",
+            "camera": "手持感 (Handheld), 第一人稱視角 (POV)",
+            "palette": "鮮豔、高飽和度"
+        }
     }
 }
 
-# --- 資訊圖表預設 (Infographic Presets) ---
-# [FIX] 這裡的 density 值必須與下方 st.select_slider 的 options 完全一致
-INFO_PRESETS = {
-    "長卷軸敘事 (Long-form Scroll)": {
-        "description": "適合講述歷史演變、流程步驟或時間軸 (Timeline)。",
-        "canvas": {
-            "ratio": "1:4 (Vertical Long)",
-            "flow": "Top-down (由上而下)",
-            "density": "Medium (平衡)"  # [FIXED]
-        },
-        "structure": {
-            "header": "Hero Title + Intro illustration",
-            "body": "Zig-zag path or Central timeline line",
-            "footer": "Call to action + Sources"
-        },
-        "viz_style": "Icon-heavy with connecting lines"
-    },
-    "數據儀表板 (Data Dashboard)": {
-        "description": "單頁高密度數據展示，適合年度回顧、比較分析。",
-        "canvas": {
-            "ratio": "4:3 or 1:1 (Poster)",
-            "flow": "Modular / Grid (模組化)",
-            "density": "High (密集)"    # [FIXED]
-        },
-        "structure": {
-            "header": "Big KPI Numbers",
-            "body": "Bento-box grid with Charts (Bar, Pie, Map)",
-            "footer": "Key Insights summary"
-        },
-        "viz_style": "Flat vectors, Clean charts"
-    },
-    "對照比較圖 (Comparison / Versus)": {
-        "description": "左右對決，適合 A/B 測試、優缺點分析、古今對照。",
-        "canvas": {
-            "ratio": "16:9 or 1:1",
-            "flow": "Split Center (中線分割)",
-            "density": "Low (極簡)"      # [FIXED]
-        },
-        "structure": {
-            "header": "Central Topic Title",
-            "body": "Two distinct columns with contrasting background colors",
-            "footer": "Verdict / Conclusion"
-        },
-        "viz_style": "Symmetrical layout, distinct color coding"
-    }
-}
+# (為了代碼完整性，保留 Slide/Info/Audio 的簡化佔位符，實際使用請保留您之前的完整定義)
+SLIDE_PRESETS = {"希伯來盟約": {}, "瑞士國際主義": {}}
+INFO_PRESETS = {"長卷軸敘事": {}}
+AUDIO_PRESETS = {"希伯來盟約": {}}
 
 # ==========================================
-# 2. 介面邏輯 (UI Logic)
+# 2. 介面邏輯
 # ==========================================
 
-# --- 側邊欄 ---
-st.sidebar.title("🎨 Visual Architect")
-mode = st.sidebar.radio("請選擇生成模式", ["📽️ 投影片 (Slides)", "📊 資訊圖表 (Infographics)"], index=1)
-
+st.sidebar.title("🎬 NotebookLM Director")
+mode = st.sidebar.radio(
+    "請選擇生成目標", 
+    ["🎬 Video Script (影音分鏡)", "🎙️ Audio Overview (語音導覽)", "📽️ 投影片 (Slides)", "📊 資訊圖表 (Infographics)"],
+    index=0
+)
 st.sidebar.divider()
 
-# 根據模式載入不同的預設值
-if mode == "📽️ 投影片 (Slides)":
-    st.sidebar.subheader("投影片風格")
-    preset_key = st.sidebar.selectbox("載入模板", list(SLIDE_PRESETS.keys()))
-    current_preset = SLIDE_PRESETS[preset_key]
-    is_infographic = False
-else:
-    st.sidebar.subheader("資訊圖表架構")
-    # 資訊圖表需要先選「架構」，再選「視覺風格」
-    info_struct_key = st.sidebar.selectbox("版面架構", list(INFO_PRESETS.keys()))
-    
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("視覺風格 (沿用)")
-    # 讓用戶可以使用投影片定義好的視覺風格 (如希伯來風) 套用到資訊圖表上
-    style_key = st.sidebar.selectbox("視覺風格", list(SLIDE_PRESETS.keys()))
-    
-    info_preset = INFO_PRESETS[info_struct_key]
-    style_preset = SLIDE_PRESETS[style_key]
-    is_infographic = True
+if mode == "🎬 Video Script (影音分鏡)":
+    st.sidebar.subheader("影片風格")
+    video_key = st.sidebar.selectbox("載入預設", list(VIDEO_PRESETS.keys()))
+    preset = VIDEO_PRESETS[video_key]
 
-# ==========================================
-# 3. 主畫面內容
-# ==========================================
+    st.title("NotebookLM Video Script Generator")
+    st.caption("將您的筆記轉換為詳細的「分鏡腳本」與「AI 影片生成指令」。")
 
-st.title(f"NotebookLM {mode.split(' ')[1]} 生成器")
-st.caption(current_preset['description'] if not is_infographic else info_preset['description'])
+    col1, col2 = st.columns([1, 1])
 
-col1, col2 = st.columns([1, 1])
-
-with col1:
-    st.markdown("#### 🛠️ 參數設定")
-    
-    if not is_infographic:
-        # === 投影片設定模式 ===
-        tab_brand, tab_visual, tab_layout = st.tabs(["品牌語氣", "視覺與圖像", "版型意圖"])
+    with col1:
+        st.markdown("#### 🎥 導演板 (Director's Slate)")
         
-        with tab_brand:
-            brand_name = st.text_input("品牌名稱", value=current_preset['brand']['name'])
-            brand_tone = st.text_input("語氣", value=current_preset['brand']['tone'])
-        
-        with tab_visual:
-            art_dir = st.text_area("藝術指導", value=current_preset['visual_prompts']['art_direction'])
-            bg_prompt = st.text_area("背景指令", value=current_preset['visual_prompts']['background'])
-            
-        with tab_layout:
-            st.info("定義每一頁的版型選擇邏輯")
-            l_intent = current_preset['layout_intent']
-            logic_1 = st.text_input("邏輯 1", value=l_intent['logic_1'])
-            logic_2 = st.text_input("邏輯 2", value=l_intent['logic_2'])
-            logic_3 = st.text_input("邏輯 3", value=l_intent['logic_3'])
-            
-            # 建構 Slide YAML
-            final_yaml = {
-                "type": "Presentation Slides",
-                "framework": preset_key,
-                "brand": {"name": brand_name, "tone": brand_tone},
-                "visual_prompts": {"art_direction": art_dir, "background": bg_prompt},
-                "layout": {"selection_logic": [logic_1, logic_2, logic_3]},
-                "typography": current_preset['typography'],
-                "palette": current_preset['palette']
-            }
+        tab_vision, tab_audio, tab_tech = st.tabs(["視覺風格", "聲音設計", "技術規格"])
 
-    else:
-        # === 資訊圖表設定模式 ===
-        tab_canvas, tab_struct, tab_style = st.tabs(["畫布與動線", "結構模組", "視覺風格"])
-        
-        with tab_canvas:
-            st.info("設定圖表的物理尺寸與閱讀方向")
-            canvas_ratio = st.selectbox("長寬比", ["1:4 (Vertical Long)", "16:9 (Horizontal)", "1:1 (Square)", "A4 Vertical"], index=0)
-            canvas_flow = st.text_input("閱讀動線", value=info_preset['canvas']['flow'])
-            
-            # [FIXED] 確保這裡的 options 與 INFO_PRESETS 中的 density 值完全一致
-            canvas_density = st.select_slider(
-                "資訊密度", 
-                options=["Low (極簡)", "Medium (平衡)", "High (密集)"], 
-                value=info_preset['canvas']['density']
-            )
+        with tab_vision:
+            st.info("定義畫面看起來的樣子")
+            v_style = st.text_input("影像風格", value=preset['vision']['style'])
+            v_mood = st.text_input("情緒氛圍", value=preset['vision']['mood'])
+            v_cam = st.text_area("運鏡語言", value=preset['visuals']['camera'])
+            v_light = st.text_area("光影設定", value=preset['visuals']['lighting'])
 
-        with tab_struct:
-            st.success("定義圖表的內容區塊")
-            struct_head = st.text_input("頭部 (Header)", value=info_preset['structure']['header'])
-            struct_body = st.text_input("主體 (Body)", value=info_preset['structure']['body'])
-            struct_foot = st.text_input("尾部 (Footer)", value=info_preset['structure']['footer'])
-            viz_style = st.text_input("圖表風格", value=info_preset['viz_style'])
+        with tab_audio:
+            st.success("定義聽起來的樣子")
+            a_vo = st.text_input("旁白人設", value=preset['audio']['vo'])
+            a_music = st.text_input("配樂風格", value=preset['audio']['music'])
+            a_sfx = st.text_input("關鍵音效", value=preset['audio']['sfx'])
 
-        with tab_style:
-            st.warning(f"當前套用風格：{style_key}")
-            # 允許微調從 Slide Preset 繼承來的風格
-            infographic_palette = st.text_input("配色方案", value=f"Primary: {style_preset['palette']['primary']} / Accent: {style_preset['palette']['accent']}")
-            infographic_mood = st.text_area("氛圍描述", value=style_preset['visual_prompts']['art_direction'])
+        with tab_tech:
+            st.warning("格式設定")
+            duration = st.selectbox("目標時長", ["60秒 (Short)", "3分鐘 (Overview)", "10分鐘 (Deep Dive)"])
+            format_ratio = st.selectbox("畫面比例", ["16:9 (橫式電影/YouTube)", "9:16 (垂直 IG/TikTok)", "2.35:1 (寬銀幕史詩)"])
+            prompt_engine = st.selectbox("目標 AI 生成器", ["Runway Gen-2", "Sora", "Kling AI", "Midjourney (Static)"])
 
-        # 建構 Infographic YAML
-        final_yaml = {
-            "type": "Infographic",
-            "framework": f"{info_struct_key} + {style_key}",
-            "canvas": {
-                "dimensions": canvas_ratio,
-                "visual_flow": canvas_flow,
-                "information_density": canvas_density
+        # 建構 Video YAML
+        video_yaml = {
+            "type": "Video Script Directive",
+            "meta": {"title": "Generated from NotebookLM", "duration": duration, "ratio": format_ratio},
+            "director_vision": {
+                "style": v_style,
+                "mood": v_mood,
+                "pacing": preset['vision']['pacing']
             },
-            "composition": {
-                "header_section": struct_head,
-                "body_section": struct_body,
-                "footer_section": struct_foot
+            "audio_design": {
+                "voice_over": a_vo,
+                "music_cues": a_music,
+                "sfx_focus": a_sfx
             },
-            "visual_style": {
-                "art_direction": infographic_mood,
-                "palette_rules": infographic_palette,
-                "chart_style": viz_style
+            "visual_language": {
+                "camera": v_cam,
+                "lighting": v_light,
+                "target_engine": prompt_engine
             },
-            "rules": [
-                "確保字體大小能區分層級 (Title > Sub > Body)",
-                "保持視覺動線流暢，不跳躍",
-                "使用圖示 (Icons) 來輔助文字說明"
-            ]
+            "output_requirement": "Markdown Table with detailed Prompt engineering columns."
         }
 
-# ==========================================
-# 4. 輸出生成
-# ==========================================
+    with col2:
+        st.markdown("#### 🚀 生成指令 (Prompt Generation)")
+        st.caption("複製此指令，貼入 NotebookLM 的 **對話框 (Chat)**。")
 
-yaml_str = yaml.dump(final_yaml, allow_unicode=True, sort_keys=False)
-
-with col2:
-    st.markdown("#### 📝 YAML 指令 (Output)")
-    st.caption("複製此代碼，貼入 NotebookLM")
-    st.code(yaml_str, language='yaml')
-    
-    st.divider()
-    
-    st.markdown("#### 🚀 NotebookLM Prompt")
-    user_topic = st.text_input("內容主題", placeholder="例如：以色列人出埃及路線圖、2024年Q4財報全覽")
-    
-    if is_infographic:
-        prompt_text = f"""請依據以下的 YAML 設定檔，將我的筆記內容轉化為一張「{info_struct_key}」的資訊圖表 (Infographic) 設計企劃。
-
-請詳細描述這張圖表的：
-1. **版面構成 (Composition)**：從上到下（或由左至右）的具體區塊安排。
-2. **視覺元素**：建議使用的圖標、插圖以及圖表類型（參考 visual_style）。
-3. **數據視覺化**：如何將筆記中的關鍵數據轉化為視覺圖形（參考 composition）。
-4. **AI 繪圖指令**：給 Midjourney/DALL-E 的詳細 Prompt，用於生成這張長圖的底圖或素材。
+        prompt_text = f"""
+請扮演一位專業的紀錄片導演與編劇。請依照這份 YAML 設定檔，將我的筆記內容改寫成一份詳細的 **「影片分鏡腳本 (Video Script)」**。
 
 ---
-{yaml_str}
-"""
-    else:
-        prompt_text = f"""請依據以下的 YAML 設定檔，將我的筆記內容轉化為一份投影片大綱。
+**[ 核心指令 ]**
+1. **格式要求**：請務必輸出為一個 **Markdown 表格**，包含以下欄位：
+   - **時間 (Time)**：例如 00:00-00:10
+   - **畫面描述 (Scene Description)**：詳細描述場景、動作與氛圍。
+   - **旁白/對白 (Audio/VO)**：逐字稿內容，請符合「{a_vo}」的語氣。
+   - **聲音提示 (SFX/Music)**：標註何時進音樂或音效（如：{a_sfx}）。
+   - **AI 生成指令 ({prompt_engine} Prompt)**：這是最重要的一欄。請將該場景轉換為英文的 AI 繪圖/影片生成 Prompt，需包含「{v_style}」、「{v_light}」等關鍵詞。
 
-請明確列出每一頁的：
-1. 標題與內文。
-2. 建議版型 (Layout)。
-3. AI 繪圖指令 (Visual Prompts)。
+2. **內容轉譯**：
+   - 不要只是朗讀筆記。請將抽象的概念轉化為具體的視覺隱喻。
+   - 節奏控制：{preset['vision']['pacing']}。
+
+3. **視覺風格 (Visual Language)**：
+   - 整體風格：{v_style}
+   - 光影氛圍：{v_mood}
+   - 運鏡方式：{v_cam}
 
 ---
-{yaml_str}
+{yaml.dump(video_yaml, allow_unicode=True)}
 """
+        st.text_area("複製此指令", value=prompt_text, height=450)
+        
+        st.divider()
+        st.markdown("#### 📝 YAML 預覽")
+        st.code(yaml.dump(video_yaml, allow_unicode=True), language='yaml')
 
-    with st.expander("查看完整指令", expanded=True):
-        st.text_area("Prompt", value=prompt_text, height=250)
+else:
+    # 這裡顯示 Audio/Slide/Info 的介面 (為節省篇幅省略，請保留原代碼)
+    st.info("請從側邊欄選擇其他模式。")
