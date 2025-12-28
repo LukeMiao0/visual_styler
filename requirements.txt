@@ -1,0 +1,5 @@
+streamlit>=1.0
+PyYAML>=6.0
+# add any other dependencies your app needs, e.g.:
+# numpy>=1.25
+# openai>=0.27.0
