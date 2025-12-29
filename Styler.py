@@ -2,250 +2,270 @@ import streamlit as st
 import yaml
 
 # 設定頁面配置
-st.set_page_config(layout="wide", page_title="NotebookLM Architect v6.0", page_icon="🌷")
+st.set_page_config(layout="wide", page_title="NotebookLM Architect v7.7.1", page_icon="🏛️")
 
 # ==========================================
-# 1. 全域風格數據庫 (Master Style Database)
+# 1. 預設風格資料庫
 # ==========================================
-
-STYLE_LIBRARY = {
-    # --- 古文明系列 ---
+PRESETS = {
+    "自定義 (Custom)": {"theme": "", "context": "", "audience": "", "colors": "", "imagery": ""},
+    
     "希伯來盟約 (Hebrew Covenant)": {
-        "desc": "史詩感、羊皮卷、金/藍/紅配色，強調神聖與歷史厚度。",
-        "mood": "莊嚴、神聖、溫暖 (Solemn, Divine, Warm)",
-        "palette": "羊皮紙色 (#F3E5AB)、提吉勒藍 (#0038B8)、精金 (#D4AF37)",
-        "visual_elements": "古卷 (Scrolls)、古代地圖、曠野地景、火焰與光",
-        "font_style": "宋體 (Serif) - 帶有書法與歷史感",
-        "video_focus": "強調經文引用的視覺化、地圖路徑的演變、歷史文物的特寫"
+        "theme": "Biblical Epic & Historical",
+        "context": "聖經歷史教學、神學研討會",
+        "audience": "神學生、教會會眾",
+        "colors": "羊皮紙米黃 (#F3E5AB), 提吉勒藍 (#0038B8), 精金 (#D4AF37), 森林綠 (#1A7B4A)",
+        "imagery": "油畫質感、林布蘭光影 (Chiaroscuro)、古卷特寫、岩石板岩質感 (Slate Texture)"
     },
     "古埃及風格 (Ancient Egyptian)": {
-        "desc": "宏偉、神秘、黑金配色，強調永恆與權威。",
-        "mood": "宏大、神秘、高對比 (Monumental, Mysterious)",
-        "palette": "黑曜石 (#0F0F0F)、黃金 (#D4AF37)、青金石藍 (#191970)",
-        "visual_elements": "象形文字、金字塔幾何、蓮花圖騰、星空",
-        "font_style": "粗宋體/飾線體 - 模仿石刻銘文",
-        "video_focus": "壁畫式的橫向移動、金碧輝煌的材質特寫、星象運行的縮時"
+        "theme": "Monumental & Mysterious",
+        "context": "古文明歷史展覽、博物館導覽",
+        "audience": "歷史愛好者、遊客",
+        "colors": "黑曜石黑 (#0F0F0F), 黃金 (#D4AF37), 青金石藍 (#191970), 鮮豔黃 (#FECD43)",
+        "imagery": "壁畫風格 (Frescoes)、金字塔幾何結構、斑駁的石灰岩質感"
+    },
+    "地中海希臘 (Mediterranean Greek)": {
+        "theme": "Classical Rationalism",
+        "context": "哲學研討會、藝術史",
+        "audience": "人文學者",
+        "colors": "愛琴海藍 (#0047AB), 大理石白 (#F2F0E6), 深靛紫 (#5A3F9B)",
+        "imagery": "斑駁的馬賽克拼貼 (Mottled Mosaic)、大理石雕像光影、手寫書法質感"
     },
     "兩河流域 (Mesopotamian)": {
-        "desc": "泥板質感、楔形文字、厚重實用，文明的基石。",
-        "mood": "原始、厚重、大地感 (Earthy, Primal, Solid)",
-        "palette": "未燒泥土色 (#C19A6B)、燒磚紅 (#8B4513)、深岩灰 (#2F4F4F)",
-        "visual_elements": "泥板刻痕、楔形文字、磚塊堆砌結構、河流",
-        "font_style": "粗黑體 (Slab Serif) - 強調刻印力度",
-        "video_focus": "強調材質的紋理 (Texture)、河流流動的空拍、層層堆疊的建築結構"
+        "theme": "Cradle of Civilization",
+        "context": "文明起源探討",
+        "audience": "考古愛好者",
+        "colors": "未燒泥土色 (#C19A6B), 燒磚紅 (#8B4513), 森林綠 (#1A7B4A)",
+        "imagery": "楔形文字泥板 (Cuneiform Clay Tablet)、浮雕質感、河流航拍"
     },
-    "希臘地中海 (Greek Mediterranean)": {
-        "desc": "藍白對比、理性光輝、柱式結構，強調邏輯與哲學。",
-        "mood": "明亮、理性、通透 (Bright, Rational, Airy)",
-        "palette": "大理石白 (#FFFFFF)、愛琴海藍 (#0047AB)、月桂金 (#D4AF37)",
-        "visual_elements": "大理石柱、幾何對稱、雕塑光影、海洋",
-        "font_style": "羅馬體 (Classic Serif) - 優雅且結構嚴謹",
-        "video_focus": "純白的背景與高對比藍色、對稱的構圖、幾何圖形的動態演示"
-    },
-    
-    # --- 現代與設計系列 ---
-    "現代極簡 (Modern Minimalist)": {
-        "desc": "大量留白、無襯線字體，強調訊息純粹性。",
-        "mood": "冷靜、乾淨、低調 (Calm, Clean, Understated)",
-        "palette": "純白 (#FFFFFF)、炭黑 (#333333)、淺灰 (#F5F5F5)",
-        "visual_elements": "細線條、負空間 (Negative Space)、高解析度攝影",
-        "font_style": "細黑體 (Light Sans) - 通透呼吸感",
-        "video_focus": "極簡的轉場、文字淡入淡出、去除一切裝飾性元素"
-    },
-    "商務辦公 (Corporate Professional)": {
-        "desc": "深色模式、數據驅動、高效清晰，Luke ESL 經典風格。",
-        "mood": "專業、信賴、高效 (Professional, Trustworthy)",
-        "palette": "深藍黑 (#0A0E14)、螢光青 (#00F0FF)、白 (#FFFFFF)",
-        "visual_elements": "玻璃擬態 (Glassmorphism)、數據儀表板、科技線條",
-        "font_style": "粗黑體 (Bold Sans) - 權威且易讀",
-        "video_focus": "數據圖表的動態生長、螢光線條的指引、關鍵字的高亮顯示"
-    },
-    "包豪斯 (Bauhaus Style)": {
-        "desc": "幾何圖形、原色美學、形隨機能，前衛設計感。",
-        "mood": "前衛、幾何、結構 (Avant-garde, Geometric)",
-        "palette": "米白 (#F0F0F0)、紅 (#D92B2B)、藍 (#1E3D99)、黃 (#F2C94C)",
-        "visual_elements": "圓形/方形/三角形、斜向排版、色塊重疊",
-        "font_style": "幾何無襯線 (Geometric Sans) - 如 Futura",
-        "video_focus": "幾何圖形的拼貼動畫、原色的強烈對比、節奏感強烈的切換"
-    },
-    "日式寂 (Japanese Wabi-Sabi)": {
-        "desc": "質樸自然、不對稱之美、和紙質感，強調餘韻。",
-        "mood": "寧靜、禪意、自然 (Zen, Peaceful, Organic)",
-        "palette": "和紙白 (#EFECE8)、抹茶綠 (#5D6858)、陶土灰 (#8C837B)",
-        "visual_elements": "自然紋理、墨跡、留白 (Ma)、植物剪影",
-        "font_style": "宋體/明體 (Mincho) - 纖細優雅",
-        "video_focus": "緩慢的鏡頭推移、自然光影的變化、強調「間」的留白"
+    "商務辦公 (Corporate Pro)": {
+        "theme": "Modern Professional",
+        "context": "年度財報",
+        "audience": "投資人",
+        "colors": "深藍黑 (#0A0E14), 螢光青 (#00F0FF), 極致白, 鮮豔黃 (#FECD43)",
+        "imagery": "玻璃擬態、抽象科技線條、高解析度數據儀表板"
     }
 }
 
-INFO_STRUCTURES = {
-    "長卷軸敘事": {"canvas": {"ratio": "1:4", "flow": "Top-down", "density": "Medium"}},
-    "數據儀表板": {"canvas": {"ratio": "4:3", "flow": "Modular Grid", "density": "High"}},
-    "對照比較圖": {"canvas": {"ratio": "16:9", "flow": "Split Center", "density": "Low"}}
-}
+# ==========================================
+# 2. 核心邏輯：Master Prompt 生成器
+# ==========================================
+def get_master_spec_text(theme, context, audience, colors, imagery):
+    return f"""
+# Role: Google NotebookLM Visual Director
+你現在是 Google NotebookLM 的首席視覺總監。
+你的任務是根據「設計需求簡報 (Design Brief)」，定義一份 YAML 設計規範，並依據此規範執行後續任務。
+
+---
+## PART 1: Design Brief (核心規範)
+1. **[核心風格]**: {theme}
+2. **[簡報用途]**: {context}
+3. **[目標受眾]**: {audience}
+4. **[色彩偏好]**: {colors}
+5. **[圖像風格]**: {imagery}
+
+請在內心建立一份包含 `global_settings`, `palette` (Hex Codes), `typography`, `visual_assets` (Midjourney Prompts), `layout_templates` 的完整設計規範。
+
+**[創意轉化原則 (Creative Translation Logic)]**
+請發揮設計專業，將抽象形容詞轉化為具體的視覺參數：
+- 若提到「復古/歷史」，請在 `visual_assets` 加入「噪點 (Noise)、舊照片質感、斑駁紋理 (Distressed texture)」。
+- 若提到「博物館/神聖」，請在 `palette` 加入「深靛紫 (#5A3F9B)、森林綠 (#1A7B4A)」等厚重色系，並強調光影氛圍。
+- 若提到「科技/現代」，請在 `visual_identity` 加入「網格 (Grid)、光暈 (Glow)、玻璃擬態」。
+- 若提到「引用/經文」，請定義字體為「書法體 (Calligraphic)」或「手寫體 (Handwritten)」。
+
+接下來的所有產出，都必須嚴格遵守此規範。
+---
+"""
 
 # ==========================================
-# 2. 側邊欄：統一輸入中心 (Unified Input Center)
+# 3. UI 介面
 # ==========================================
 
-st.sidebar.title("🧠 Visual Architect v6.0")
-st.sidebar.caption("Unified Context Engine")
+st.sidebar.title("🏛️ Visual Architect v7.7.1")
+st.sidebar.caption("Bug Fix Edition")
 
-# --- A. 內容核心 (Content Core) ---
-st.sidebar.header("1. 內容定義 (Context)")
-st.sidebar.info("在此設定一次，自動應用於所有輸出格式。")
+selected_preset = st.sidebar.selectbox("快速載入預設", list(PRESETS.keys()))
+preset_data = PRESETS[selected_preset]
 
-global_topic = st.sidebar.text_input("主題 (Topic)", placeholder="例如：以色列人出埃及路線")
-global_keywords = st.sidebar.text_area("關鍵字 (Keywords)", placeholder="例如：西奈山, 盟約, 40年曠野, 嗎哪 (以逗號分隔)", height=100)
-global_audience = st.sidebar.text_input("目標受眾 (Audience)", placeholder="例如：神學生、歷史愛好者")
-
-# --- B. 風格核心 (Style Core) ---
 st.sidebar.divider()
-st.sidebar.header("2. 風格定義 (Style)")
+st.sidebar.header("1. 設計簡報 (Design Brief)")
+in_theme = st.sidebar.text_input("1. 核心風格", value=preset_data['theme'])
+in_context = st.sidebar.text_input("2. 使用情境", value=preset_data['context'])
+in_audience = st.sidebar.text_input("3. 目標受眾", value=preset_data['audience'])
+in_colors = st.sidebar.text_input("4. 色彩偏好", value=preset_data['colors'])
+in_imagery = st.sidebar.text_area("5. 圖像風格", value=preset_data['imagery'], height=80)
 
-selected_style_name = st.sidebar.selectbox("視覺框架", list(STYLE_LIBRARY.keys()))
-style_data = STYLE_LIBRARY[selected_style_name]
+st.sidebar.divider()
+st.sidebar.header("2. 內容定義")
+in_topic = st.sidebar.text_input("內容主題", placeholder="例如：以色列人出埃及路線")
+in_keywords = st.sidebar.text_area("關鍵字", placeholder="例如：西奈山, 盟約, 40年曠野", height=80)
 
-# 風格預覽
-st.sidebar.markdown(f"**{selected_style_name}**")
-st.sidebar.caption(style_data['desc'])
-with st.sidebar.expander("查看風格參數"):
-    st.write(f"🎨 配色: {style_data['palette']}")
-    st.write(f"🖼️ 元素: {style_data['visual_elements']}")
-    st.write(f"🎞️ 影片重點: {style_data['video_focus']}")
+st.title("NotebookLM Generator")
 
-# ==========================================
-# 3. 主畫面：多模態輸出 (Multi-modal Output)
-# ==========================================
+if not in_theme:
+    st.warning("👈 請先在左側填寫設計簡報。")
 
-st.title(f"NotebookLM 多模態生成指令")
-if global_topic:
-    st.success(f"當前專案：{global_topic} | 風格：{selected_style_name}")
-else:
-    st.warning("請先在左側輸入「主題」與「關鍵字」以開始生成。")
+# Tabs
+tab_slide, tab_video, tab_info, tab_spec = st.tabs(["📽️ Slide Deck", "🎬 Video Overview", "📊 Infographic", "🧬 Master Spec"])
 
-# 使用 Tabs 來切換不同的輸出格式
-tab_slide, tab_video, tab_info = st.tabs(["📽️ Slide Deck (投影片)", "🎬 Video Overview (導演模式)", "📊 Infographic (資訊圖表)"])
+# 準備 Master Spec 文本
+master_spec_text = get_master_spec_text(in_theme, in_context, in_audience, in_colors, in_imagery)
 
 # ----------------------------------------------------
 # Tab 1: Slide Deck
 # ----------------------------------------------------
 with tab_slide:
-    st.subheader("Slide Deck Generation")
+    st.subheader("Slide Deck Generator")
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        # 繼承全域變數
-        layout_logic = st.text_area("Slide 版型邏輯", value="Title: impactful-center\nData: chart-focus\nQuote: typographic-poster", height=100)
+        st.markdown("##### ⚙️ 原子化設計參數")
         
-        slide_yaml = {
-            "type": "Presentation Slides",
-            "meta": {"topic": global_topic, "audience": global_audience},
-            "content_context": {
-                "keywords": [k.strip() for k in global_keywords.split(",")] if global_keywords else [],
-                "instruction": "Highlight these keywords visually."
-            },
-            "framework": selected_style_name,
-            "brand": {"tone": style_data['mood']},
-            "visual_prompts": {"instruction": f"Use {style_data['visual_elements']} with {style_data['palette']} palette."},
-            "layout_intent": layout_logic.split('\n'),
-            "typography": style_data['font_style']
-        }
-    
-    with col2:
-        st.caption("複製此 YAML 給 NotebookLM")
-        st.code(yaml.dump(slide_yaml, allow_unicode=True), language='yaml')
-        
-        prompt_text = f"""請將筆記轉化為投影片大綱。
-主題：{global_topic}
-關鍵字：{global_keywords}
-風格：{selected_style_name}
+        # 1. 網格與佈局
+        with st.expander("📐 1. 網格與佈局", expanded=True):
+            grid_system = st.selectbox("Grid 系統", ["12-Column Modular", "Asymmetric", "Golden Ratio", "Single Column"])
+            img_txt_ratio = st.select_slider("圖文比例", ["文字為主", "平衡", "圖像為主"], value="平衡")
+            layout_hierarchy = st.text_input("版面層級", value="Visual > Headline > Data")
 
----
-{yaml.dump(slide_yaml, allow_unicode=True)}
+        # 2. 字體與層級
+        with st.expander("🔠 2. 字體與層級", expanded=True):
+            h1_style = st.text_input("標題 (H1/H2)", value="Serif, Bold" if "Hebrew" in selected_preset else "Sans-serif, Heavy")
+            body_style = st.text_input("內文 (Body)", value="Serif, Readable" if "Hebrew" in selected_preset else "Sans-serif")
+            list_style = st.selectbox("列表樣式", ["Icon List", "Bullet Points", "Numbered", "No Bullets"])
+            quote_style = st.selectbox("引文樣式 (Quote)", 
+                                     ["Handwritten Font (手寫體)", "Calligraphic Script (書法體)", "Oversized Quote Marks (巨型引號)", "Modern Blockquote"])
+        
+        # 3. 視覺與背景
+        with st.expander("🎨 3. 視覺與背景", expanded=True):
+            bg_style = st.text_input("背景風格", value="Textured Parchment/Slate" if "Hebrew" in selected_preset else "Solid/Gradient")
+            color_usage = st.text_input("色彩策略", value="Accent: Vivid Yellow (#FECD43) & Forest Green (#1A7B4A)")
+            decorations = st.text_input("裝飾元素", value="Ancient Border Patterns" if "Hebrew" in selected_preset else "Minimalist Lines")
+
+        st.markdown("---")
+        include_master_slide = st.checkbox("📥 包含 Master Design Specs", value=True, key="inc_master_slide")
+
+        # Slide YAML
+        slide_yaml_instruction = {
+            "type": "Presentation Slides",
+            "content_context": {"topic": in_topic, "keywords": in_keywords},
+            "design_tokens": {
+                "grid_system": grid_system,
+                "composition_ratio": img_txt_ratio,
+                "visual_hierarchy": layout_hierarchy
+            },
+            "typography_rules": {
+                "headings": h1_style,
+                "body_text": body_style,
+                "list_format": list_style,
+                "quote_format": quote_style
+            },
+            "visual_components": {
+                "background": bg_style,
+                "decorations": decorations,
+                "color_application": color_usage
+            }
+        }
+
+        # Prompt with Clean Output Rules
+        slide_task_text = f"""
+## PART 2: Execution Task (Slide Deck)
+請依據 PART 1 設計規範，並嚴格遵守以下參數生成大綱。
+
+**[原子化設計參數]**
+{yaml.dump(slide_yaml_instruction, allow_unicode=True)}
+
+**[輸出格式嚴格規範 (Clean Output Rules)]**
+1. **標題去符號化**：標題 **嚴禁** 使用 Markdown 的 `#` 符號。請直接寫出標題文字，並確保它是該頁的第一行（可加粗）。
+2. **去標籤化**：內容中 **勿** 出現「標題：」、「內文：」等提示詞。
+3. **引文處理**：若有引文，請註明使用「{quote_style}」字體。
+4. **裝飾指示**：請明確指出每頁的「裝飾元素」（如：{decorations}）。
+
+**輸出要求**：
+請列出每一頁的完整內容（純文字格式，不含 #）與 AI 繪圖指令。
 """
-        st.text_area("Slide Prompt", value=prompt_text, height=200)
+        final_slide_prompt = master_spec_text + slide_task_text if include_master_slide else slide_task_text
+
+    with col2:
+        st.text_area("🚀 複製此指令", value=final_slide_prompt, height=750)
 
 # ----------------------------------------------------
-# Tab 2: Video Overview (Pro)
+# Tab 2: Video Overview (Bug Fix: Pacing Value)
 # ----------------------------------------------------
 with tab_video:
-    st.subheader("Native Video Director's Monitor")
+    st.subheader("Video Director")
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        # Video 專屬的微調參數
-        st.markdown("###### 導演微調")
-        pacing = st.select_slider("剪輯節奏", options=["Slow", "Medium", "Fast"], value="Slow" if "莊嚴" in style_data['mood'] else "Medium")
+        st.markdown("##### ⚙️ Video 參數設定")
         
-        # 自動判斷是否開啟古物模式
-        is_historical = "希伯來" in selected_style_name or "埃及" in selected_style_name or "兩河" in selected_style_name
-        enhance_historical = st.checkbox("古物增強模式 (優先展示文物)", value=is_historical)
+        # [FIX] 這裡修正了 value 必須與 options 列表中的項目完全一致
+        pacing = st.select_slider("剪輯節奏", 
+                                options=["Slow (沉思)", "Medium (敘事)", "Fast (快閃)"], 
+                                value="Medium (敘事)") 
+                                
+        narrator = st.radio("旁白風格", ["Invisible Narrator", "AI Virtual Host", "Kinetic Text Only"], index=0)
+        
+        is_historical = "歷史" in in_context or "史" in in_theme or "Bible" in in_theme or "Ancient" in selected_preset
+        enhance_historical = st.checkbox("🏛️ 古物增強模式 (優先展示文物)", value=is_historical)
+        
+        st.markdown("---")
+        include_master_video = st.checkbox("📥 包含 Master Design Specs", value=True, key="inc_master_video")
 
-        video_yaml = {
-            "type": "Native Video Directive",
-            "meta": {"topic": global_topic, "keywords": global_keywords},
-            "style_framework": selected_style_name,
-            "art_direction": {
-                "theme": f"{selected_style_name} - {style_data['visual_elements']}",
-                "mood": style_data['mood'],
-                "historical_mode": enhance_historical
-            },
-            "content_strategy": {
-                "visual_priority": style_data['video_focus'],
-                "highlight_keywords": global_keywords
-            },
-            "production": {"pacing": pacing}
-        }
+        video_task_text = f"""
+## PART 2: Execution Task (Video Script)
+請作為 Video Overview 的藝術總監。
+請將 PART 1 定義的視覺風格應用於影片生成。
+
+**[影片專屬設定]**
+- **剪輯節奏**: {pacing}
+- **旁白形式**: {narrator}
+- **古物增強模式**: {'開啟 (請優先展示古卷、地圖、文物)' if enhance_historical else '關閉'}
+- **內容策略**: 優先展示「{in_keywords}」相關素材。
+
+請生成一份包含時間碼、畫面描述與 AI 生成指令的分鏡表。
+"""
+        final_video_prompt = master_spec_text + video_task_text if include_master_video else video_task_text
 
     with col2:
-        st.caption("複製此 YAML 給 NotebookLM Video Overview")
-        st.code(yaml.dump(video_yaml, allow_unicode=True), language='yaml')
-        
-        prompt_text = f"""請作為 Video Overview 的藝術總監。
-主題：{global_topic}
-風格：{selected_style_name}
-
-請依照 YAML 指令，優先展示與「{global_keywords}」相關的素材。
----
-{yaml.dump(video_yaml, allow_unicode=True)}
-"""
-        st.text_area("Video Prompt", value=prompt_text, height=200)
+        st.text_area("🚀 複製此指令", value=final_video_prompt, height=550)
 
 # ----------------------------------------------------
 # Tab 3: Infographic
 # ----------------------------------------------------
 with tab_info:
-    st.subheader("Infographic Generation")
+    st.subheader("Infographic")
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        # Info 專屬參數
-        struct_name = st.selectbox("圖表架構", list(INFO_STRUCTURES.keys()))
-        struct_data = INFO_STRUCTURES[struct_name]
-        
-        info_yaml = {
-            "type": "Infographic",
-            "meta": {"topic": global_topic, "keywords": global_keywords},
-            "framework": f"{struct_name} ({selected_style_name})",
-            "canvas": struct_data['canvas'],
-            "visual_style": {
-                "palette": style_data['palette'],
-                "elements": style_data['visual_elements'],
-                "mood": style_data['mood']
-            }
-        }
+        st.markdown("##### ⚙️ Info 參數設定")
+        struct = st.selectbox("圖表架構", ["長卷軸 (Long Scroll)", "儀表板 (Dashboard)", "比較圖 (Comparison)"])
+        canvas_ratio = st.selectbox("畫布比例", ["1:4 (手機長圖)", "16:9 (寬螢幕)", "4:3 (海報)"])
+        density = st.select_slider("資訊密度", ["Low", "Medium", "High"], value="Medium")
+
+        st.markdown("---")
+        include_master_info = st.checkbox("📥 包含 Master Design Specs", value=True, key="inc_master_info")
+
+        info_task_text = f"""
+## PART 2: Execution Task (Infographic)
+請依據 PART 1 的設計規範，設計一張資訊圖表。
+
+**[圖表專屬設定]**
+- **架構類型**: {struct}
+- **畫布比例**: {canvas_ratio}
+- **資訊密度**: {density}
+- **主題**: {in_topic}
+
+請描述版面構成、數據視覺化方式與所需的插圖指令。
+"""
+        final_info_prompt = master_spec_text + info_task_text if include_master_info else info_task_text
 
     with col2:
-        st.caption("複製此 YAML 給 NotebookLM")
-        st.code(yaml.dump(info_yaml, allow_unicode=True), language='yaml')
-        
-        prompt_text = f"""請將筆記轉化為資訊圖表企劃。
-主題：{global_topic}
-架構：{struct_name}
-風格：{selected_style_name}
+        st.text_area("🚀 複製此指令", value=final_info_prompt, height=550)
 
----
-{yaml.dump(info_yaml, allow_unicode=True)}
-"""
-        st.text_area("Infographic Prompt", value=prompt_text, height=200)
+# ----------------------------------------------------
+# Tab 4: Master Spec Preview
+# ----------------------------------------------------
+with tab_spec:
+    st.subheader("🧬 Master Design Spec")
+    st.caption("這是隱藏在 Prompt 開頭的「核心大腦」，負責創意轉化。")
+    st.code(master_spec_text, language='markdown')
