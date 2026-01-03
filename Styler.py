@@ -337,7 +337,9 @@ with tab_video:
     col1, col2 = st.columns([1, 1])
     with col1:
         st.markdown("##### ⚙️ Video 設定")
-        pacing = st.select_slider("剪輯節奏", ["Slow (沉思)", "Medium (敘事)", "Fast (快閃)"], value="Medium")
+        # Fixed: `value` now matches one of the options exactly
+        pacing = st.select_slider("剪輯節奏", ["Slow (沉思)", "Medium (敘事)", "Fast (快閃)"], value="Medium (敘事)")
+        
         # 智能判斷歷史模式
         is_historical = "Historical" in in_theme or "Ancient" in selected_preset_key or "Clay" in selected_preset_key or "Egypt" in selected_preset_key
         enhance_historical = st.checkbox("🏛️ 古物增強模式", value=is_historical)
