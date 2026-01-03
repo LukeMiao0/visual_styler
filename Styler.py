@@ -272,22 +272,34 @@ with tab_slide:
     with col1:
         st.markdown("##### ⚙️ 參數設定")
         
-        # 智能預設值
+        # 智能預設值邏輯
         is_mbb = "MBB" in selected_preset_key or "Consulting" in in_theme
-        is_ancient = "Ancient" in selected_preset_key or "Hebrew" in selected_preset_key or "Nile" in selected_preset_key
+        is_ancient = "Ancient" in selected_preset_key or "Hebrew" in selected_preset_key or "Nile" in selected_preset_key or "Clay" in selected_preset_key or "Greek" in selected_preset_key
+        # 定義現代風格以作為對立面
+        is_modern = "Swiss" in selected_preset_key or "Bauhaus" in selected_preset_key or "Corporate" in selected_preset_key or "Apple" in selected_preset_key or "Porcelain" in selected_preset_key
+
+        # 預設值計算
+        default_grid_idx = 0 # Auto-Detect
+        if is_mbb: default_grid_idx = 3 # Data-Heavy
+        elif is_modern and "Swiss" in selected_preset_key: default_grid_idx = 2 # 12-Column
+        elif is_modern: default_grid_idx = 1 # Bento
+
+        default_hierarchy = "Action Title > Data > Conclusion" if is_mbb else ("Hero Visual > Headline > Minimal Text" if is_modern else "Visual > Headline > Data")
         
-        default_grid = "Data-Heavy Grid (高密度)" if is_mbb else "Auto-Detect (根據項目數量)"
-        default_hierarchy = "Action Title > Data > Conclusion" if is_mbb else "Visual > Headline > Data"
-        default_quote = "Boxed Quote" if is_mbb else ("Ancient Scroll" if is_ancient else "Calligraphic")
+        # Quote 預設值邏輯
+        default_quote_idx = 0 # Ancient Scroll
+        if is_mbb: default_quote_idx = 4 # Professional Box
+        elif is_modern: default_quote_idx = 5 # Modern Blockquote
+        elif "Greek" in selected_preset_key: default_quote_idx = 1 # Stone Tablet
 
         with st.expander("📐 佈局與字體", expanded=True):
-            grid_system = st.selectbox("Grid 系統", ["Auto-Detect (根據項目數量)", "Bento Grid", "12-Column Modular", "Data-Heavy Grid"], index=3 if is_mbb else 0)
+            grid_system = st.selectbox("Grid 系統", ["Auto-Detect (根據項目數量)", "Bento Grid", "12-Column Modular", "Data-Heavy Grid (高密度)"], index=default_grid_idx)
             layout_hierarchy = st.text_input("版面層級", value=default_hierarchy)
-            quote_style = st.selectbox("引文/經文樣式", ["Ancient Scroll (古卷)", "Stone Tablet (石板)", "Calligraphic (書法)", "Handwritten (手寫)", "Professional Box (方框)"], index=4 if is_mbb else 0)
+            quote_style = st.selectbox("引文/經文樣式", ["Ancient Scroll (古卷)", "Stone Tablet (石板)", "Calligraphic (書法)", "Handwritten (手寫)", "Professional Box (方框)", "Modern Blockquote (現代引用)"], index=default_quote_idx)
         
         with st.expander("🎨 視覺與裝飾", expanded=True):
             bg_style = st.text_input("背景風格", value="Textured (紋理)" if is_ancient else "Clean/Gradient")
-            decorations = st.text_input("裝飾元素", value="Seals & Borders (印章與邊框)" if is_ancient else "Minimal Lines")
+            decorations = st.text_input("裝飾元素", value="Seals & Borders (印章與邊框)" if is_ancient else ("Minimal Lines & Glass" if is_modern else "Standard"))
 
         st.markdown("---")
         include_master_slide = st.checkbox("📥 包含 Master Design Specs", value=True, key="inc_master_slide")
@@ -337,9 +349,7 @@ with tab_video:
     col1, col2 = st.columns([1, 1])
     with col1:
         st.markdown("##### ⚙️ Video 設定")
-        # Fixed: `value` now matches one of the options exactly
         pacing = st.select_slider("剪輯節奏", ["Slow (沉思)", "Medium (敘事)", "Fast (快閃)"], value="Medium (敘事)")
-        
         # 智能判斷歷史模式
         is_historical = "Historical" in in_theme or "Ancient" in selected_preset_key or "Clay" in selected_preset_key or "Egypt" in selected_preset_key
         enhance_historical = st.checkbox("🏛️ 古物增強模式", value=is_historical)
